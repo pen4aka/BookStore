@@ -42,62 +42,65 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import BookFilter from './components/BookFilter.vue'
 import AddBook from './components/AddBook.vue'
 import BookList from './components/BookList.vue'
 
-const books = ref([
-  {
-    id: 1,
-    name: 'Book Title 1',
-    image: 'https://via.placeholder.com/150',
-    author: 'Author Name',
-    price: 19.99
-  },
-  {
-    id: 2,
-    name: 'Book Title 2',
-    image: 'https://via.placeholder.com/150',
-    author: 'Author Name',
-    price: 15.99
-  },
-  {
-    id: 3,
-    name: 'Book Title 3',
-    image: 'https://via.placeholder.com/150',
-    author: 'Author Name',
-    price: 12.99
-  }
-])
-
+const books = ref([]) // Start with an empty array
 const filterText = ref('')
-const filteredBooks = ref(books.value)
+const filteredBooks = ref([])
 const isAddingBook = ref(false) // State to toggle between views
 
+// Save books to LocalStorage
+const saveBooksToLocalStorage = () => {
+  localStorage.setItem('books', JSON.stringify(books.value))
+}
+
+// Load books from LocalStorage
+const loadBooksFromLocalStorage = () => {
+  const storedBooks = localStorage.getItem('books')
+  if (storedBooks) {
+    books.value = JSON.parse(storedBooks)
+  }
+}
+
+// Lifecycle hook: Load books on app mount
+onMounted(() => {
+  loadBooksFromLocalStorage()
+  applyFilter() // Apply the filter after loading
+})
+
+// Add a book and save to LocalStorage
 const addBook = (newBook) => {
-  books.value.push(newBook) // Push directly into the reactive array
+  books.value.push(newBook) // Add new book to the array
+  saveBooksToLocalStorage() // Save updated array to LocalStorage
   applyFilter()
 }
 
+// Delete a book and save to LocalStorage
 const deleteBook = (bookId) => {
   books.value = books.value.filter((book) => book.id !== bookId)
+  saveBooksToLocalStorage() // Save updated array to LocalStorage
   applyFilter()
 }
 
+// Filter books based on input text
 const filterBooks = (text) => {
   filterText.value = text
   applyFilter()
 }
 
+// Apply filter logic
 const applyFilter = () => {
   filteredBooks.value = books.value.filter((book) =>
     book.name.toLowerCase().includes(filterText.value.toLowerCase())
   )
 }
 
+// Toggle between AddBook and BookList views
 const toggleAddBook = () => {
-  isAddingBook.value = !isAddingBook.value // Toggle between book list and add book form
+  isAddingBook.value = !isAddingBook.value
 }
 </script>
 
